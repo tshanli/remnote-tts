@@ -1,0 +1,25 @@
+# Copy this file to config.toml and adjust the values for your server.
+# Environment variables override values from config.toml.
+
+public_base_url = "http://localhost:8765"
+audio_dir = "data/audio"
+auth_token = ""
+
+default_language = "nl-NL"
+default_voice = "nl-NL-FennaNeural"
+
+allowed_languages = []
+allowed_voices = []
+cors_origins = ["http://localhost:8080", "http://127.0.0.1:8080"]
+
+[label_profiles."Uitspraak"]
+language = "nl-NL"
+voice = "nl-NL-FennaNeural"
+
+[label_profiles."Pronunciation"]
+language = "en-US"
+voice = "en-US-AriaNeural"
+
+[label_profiles."发音"]
+language = "zh-CN"
+voice = "zh-CN-XiaoxiaoNeural"

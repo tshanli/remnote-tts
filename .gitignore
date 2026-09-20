@@ -1,0 +1,13 @@
+plugin/node_modules/
+plugin/dist/
+plugin/PluginZip.zip
+server/.venv/
+server/__pycache__/
+server/app/__pycache__/
+server/tests/__pycache__/
+server/.pytest_cache/
+server/data/audio/
+server/.env
+.serena/
+*.py[cod]
+config.toml

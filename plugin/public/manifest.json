@@ -1,0 +1,22 @@
+{
+  "manifestVersion": 1,
+  "id": "remnote_pronunciation",
+  "name": "RemNote Pronunciation",
+  "author": "RemNote Pronunciation",
+  "repoUrl": "https://github.com/jiang2ji/remnote-pronunciation",
+  "version": {
+    "major": 0,
+    "minor": 1,
+    "patch": 0
+  },
+  "theme": [],
+  "enableOnMobile": true,
+  "description": "Generate cached edge-tts pronunciation audio for the focused Rem.",
+  "requestNative": false,
+  "requiredScopes": [
+    {
+      "type": "All",
+      "level": "ReadCreateModify"
+    }
+  ]
+}

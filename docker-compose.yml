@@ -1,0 +1,24 @@
+services:
+  pronunciation-server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - "8765:8765"
+    environment:
+      AUDIO_DIR: /app/server/data/audio
+    volumes:
+      - ./server/data/audio:/app/server/data/audio
+      - ./server/config.toml:/app/server/config.toml:ro
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8765/health')
+      interval: 30s
+      timeout: 5s
+      retries: 3
