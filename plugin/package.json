@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "remnote-pronunciation-plugin",
+  "name": "remnote-tts-plugin",
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {

@@ -1,29 +1,27 @@
-# RemNote Pronunciation
+# RemNote TTS
 
-RemNote Pronunciation adds text-to-speech audio to an existing pronunciation
-descriptor. It uses a RemNote plugin and a small Python server backed by
-`edge-tts`.
+RemNote TTS adds text-to-speech audio to a Rem through a RemNote plugin and a
+small Python server backed by `edge-tts`.
 
 ## How it works
 
-Create a vocabulary Rem and one pronunciation child:
+Create a source Rem and one child Rem:
 
 ```text
 - passen
     - Uitspraak
 ```
 
-Add the plugin's **TTS** PowerUp to the pronunciation child. That explicit
-PowerUp attachment triggers generation. The plugin reads the direct parent text
-(`passen`) and the child label, then asks the server to generate speech. The
-server selects the language and voice from its label profiles, caches the MP3,
-and returns a stable audio URL. The plugin writes the audio into the
-pronunciation label's back text.
+Add the plugin's **TTS** PowerUp to the child Rem. That attachment triggers
+generation. The plugin reads the direct parent text (`passen`) and sends the
+child label to the server. The server selects the language and voice from its
+label profiles, applies its rate and pitch, caches the MP3, and returns a stable
+audio URL. The plugin writes the audio into the child Rem's back text.
 
 The TTS PowerUp opts the child into automatic updates. Editing the parent text
 regenerates its audio. The listener waits briefly while RemNote finishes a burst
 of edits, so pasting several Rems does not send duplicate requests for the same
-pronunciation. The manual **Generate Pronunciation for Focused Rem** command
+pronunciation. The manual **Generate TTS Audio for Focused Rem** command
 remains available for retrying or forcing a fresh generation.
 
 The same flow works with these labels:
@@ -45,10 +43,10 @@ Copy the example configuration:
 cp server/example.config.toml server/config.toml
 ```
 
-Edit `server/config.toml` to set the server URL, fallback profile, label
-profiles, CORS origins, allow-lists, and optional bearer token. The server reads
-that file by default. Set `CONFIG_FILE` to use another TOML file. Environment
-variables override TOML values.
+Edit `server/config.toml` to set the public URL, fallback profile, default rate
+and pitch, label profiles, CORS origins, allow-lists, and optional bearer token.
+The server reads that file by default. Set `CONFIG_FILE` to use another TOML
+file. Environment variables override TOML values.
 
 For RemNote Cloud to fetch audio, `public_base_url` must be a public HTTPS URL.
 `http://localhost:8765` works for local testing but cannot be reached by the
@@ -113,10 +111,10 @@ mise run plugin:package
 
 This creates `plugin/PluginZip.zip` from the contents of `plugin/dist/`.
 
-Set the plugin's **Host** setting to the pronunciation server base URL. The
-default is `http://localhost:8765`. The optional bearer token and speech rate
-are also plugin settings. Language and voice are configured on the server, not
-in the plugin. The plugin is enabled for mobile, but mobile users need a public
+Set the plugin's **Host** setting to the TTS server base URL. The default is
+`http://localhost:8765`. The optional bearer token is also a plugin setting.
+Language, voice, rate, and pitch are configured on the server, not in the
+plugin. The plugin is enabled for mobile, but mobile users need a public
 HTTPS plugin URL and a public HTTPS TTS server; `localhost` only works on the
 development computer.
 
@@ -124,7 +122,7 @@ development computer.
 
 ```http
 GET  /health
-POST /api/pronunciation
+POST /api/tts
 GET  /audio/{hash}.mp3
 ```
 
@@ -133,9 +131,7 @@ The plugin sends:
 ```json
 {
   "text": "passen",
-  "label": "Uitspraak",
-  "rate": "+0%",
-  "pitch": "+0Hz"
+  "label": "Uitspraak"
 }
 ```
 
@@ -148,7 +144,9 @@ language and voice selected by the server:
   "hash": "<hash>",
   "text": "passen",
   "language": "nl-NL",
-  "voice": "nl-NL-FennaNeural"
+  "voice": "nl-NL-FennaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz"
 }
 ```
 
@@ -165,6 +163,6 @@ uv run --project . pytest
 ```
 
 The automated checks cover plugin compilation, server syntax, MP3 caching,
-failure cleanup, label profile selection, and TOML loading. Test the final
-RemNote behavior with a focused pronunciation label and a public HTTPS audio
+failure cleanup, label profile selection, server TTS settings, and TOML loading.
+Test the final RemNote behavior with a TTS PowerUp and a public HTTPS audio
 endpoint before deployment.

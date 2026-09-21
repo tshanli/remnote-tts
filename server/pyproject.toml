@@ -1,7 +1,7 @@
 [project]
-name = "remnote-pronunciation-server"
+name = "remnote-tts-server"
 version = "0.1.0"
-description = "Small edge-tts server for the RemNote Pronunciation plugin"
+description = "Small edge-tts server for the RemNote TTS plugin"
 requires-python = ">=3.11"
 dependencies = [
   "edge-tts>=7.2.0",

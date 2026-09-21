@@ -7,6 +7,8 @@ auth_token = ""
 
 default_language = "nl-NL"
 default_voice = "nl-NL-FennaNeural"
+default_rate = "+0%"
+default_pitch = "+0Hz"
 
 allowed_languages = []
 allowed_voices = []

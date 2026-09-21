@@ -1,9 +1,9 @@
-# RemNote Pronunciation
+# RemNote TTS
 
 ## Project purpose
 
-RemNote Pronunciation adds text-to-speech audio to an existing pronunciation
-descriptor. The repository contains two small applications:
+RemNote TTS adds text-to-speech audio to a Rem. The repository contains two
+small applications:
 
 - `plugin/`: a TypeScript RemNote plugin.
 - `server/`: a Python HTTP server that generates and caches MP3 files with
@@ -12,13 +12,16 @@ descriptor. The repository contains two small applications:
 The normal RemNote flow is:
 
 1. Create a vocabulary Rem, such as `passen`.
-2. Add a child Rem named `Uitspraak`, `Pronunciation`, or `发音`.
-3. Focus that pronunciation label and run the plugin command.
-4. The plugin reads the parent vocabulary Rem and sends its text and label to
-   the server.
-5. The server chooses the configured language and voice, generates or reuses
-   the MP3, and returns its URL.
-6. The plugin inserts the audio into the focused label's back text.
+2. Add a child Rem with the label configured on the TTS server.
+3. Attach the `TTS` PowerUp to that child Rem.
+4. The plugin reads the direct parent Rem and sends its text and label to the
+   server.
+5. The server chooses the configured language, voice, rate, and pitch, then
+   generates or reuses the MP3.
+6. The plugin inserts the audio into the TTS Rem's back text.
+
+The manual `Generate TTS Audio for Focused Rem` command remains available for
+retrying or forcing a fresh generation.
 
 The visible result is:
 
@@ -37,7 +40,7 @@ metadata, never as ordinary card text.
 - Keep the plugin in TypeScript and the server in Python.
 - Use the filesystem for MP3 caching. Do not add a database, queue, or object
   storage layer unless the project requirements change.
-- Support one focused pronunciation label at a time. Do not add library-wide
+- Support one focused TTS Rem at a time. Do not add library-wide
   scanning or batch generation without a separate requirement.
 - Use the RemNote plugin API directly, including `plugin.richText.audio(url)`.
 - Keep secrets out of source control.
@@ -51,18 +54,21 @@ The plugin registers:
 
 - the `TTS` custom Power-up with hidden slots for status, hash, language, voice,
   and generated URL;
-- the `Generate Pronunciation for Focused Rem` command;
+- the `Generate TTS Audio for Focused Rem` command;
 - a right-sidebar widget that runs the same command;
-- settings for the server `Host`, an optional bearer token, and speech rate.
+- debounced Rem-change listeners that detect TTS-tagged Rems from global,
+  PowerUp, focus, and per-Rem parent/child changes;
+- settings for the server `Host` and an optional bearer token.
 
-Language and voice are server configuration. The plugin sends the focused label
-and the parent Rem text. The server resolves the label through its configured
-profile map and applies the default profile when no mapping exists.
+Language, voice, rate, and pitch are server configuration. The plugin sends the
+focused Rem's label and direct parent text. The server resolves the label
+through its configured profile map and applies the default profile when no
+mapping exists.
 
 The plugin reads the focused Rem with `plugin.focus.getFocusedRem()` and uses
-the SDK rich-text helpers to convert Rem text to plain text. It only accepts a
-pronunciation label as the focused Rem and requires that label to have a parent
-Rem.
+the SDK rich-text helpers to convert Rem text to plain text. Automatic
+generation checks only for the TTS PowerUp and requires the TTS Rem to have a
+direct parent with text.
 
 The write sequence is:
 
@@ -75,8 +81,8 @@ The write sequence is:
    slots.
 
 On failure, the plugin shows an error toast and does not change the focused Rem.
-Running the command again updates the same label instead of creating another
-pronunciation Rem.
+Running the command again updates the same TTS Rem instead of creating another
+child Rem.
 
 ## Server API
 
@@ -84,7 +90,7 @@ The server exposes:
 
 ```http
 GET  /health
-POST /api/pronunciation
+POST /api/tts
 GET  /audio/{hash}.mp3
 ```
 
@@ -93,9 +99,7 @@ The plugin sends requests in this form:
 ```json
 {
   "text": "passen",
-  "label": "Uitspraak",
-  "rate": "+0%",
-  "pitch": "+0Hz"
+  "label": "Uitspraak"
 }
 ```
 
@@ -107,13 +111,15 @@ The server resolves `language` and `voice` from the label profile and returns:
   "hash": "<hash>",
   "text": "passen",
   "language": "nl-NL",
-  "voice": "nl-NL-FennaNeural"
+  "voice": "nl-NL-FennaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz"
 }
 ```
 
 Server rules:
 
-- Reject empty text, language, or voice values.
+- Reject empty text, language, voice, rate, or pitch values.
 - Enforce language and voice allow-lists when configured.
 - Compute a SHA-256 hash from canonical text, language, voice, rate, and pitch
   values.
@@ -136,9 +142,9 @@ cp server/example.config.toml server/config.toml
 ```
 
 The TOML file configures `public_base_url`, the audio directory, the fallback
-language and voice, CORS origins, allow-lists, and label profiles. Environment
-variables such as `PUBLIC_BASE_URL` override TOML values. Set `CONFIG_FILE` to
-load another TOML file.
+language and voice, the default rate and pitch, CORS origins, allow-lists, and
+label profiles. Environment variables such as `PUBLIC_BASE_URL` override TOML
+values. Set `CONFIG_FILE` to load another TOML file.
 
 The default label profiles are:
 
