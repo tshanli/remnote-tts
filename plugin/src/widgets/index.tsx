@@ -3,13 +3,18 @@ import { declareIndexPlugin, type ReactRNPlugin, WidgetLocation } from '@remnote
 import '../style.css';
 import {
   generatePronunciationForFocusedRem,
+  registerAutomaticPronunciation,
   registerPronunciationPowerup,
   registerPronunciationSettings,
 } from '../lib/pronunciation';
 
+let stopAutomaticPronunciation: (() => void) | undefined;
+
 async function onActivate(plugin: ReactRNPlugin): Promise<void> {
   await registerPronunciationPowerup(plugin);
   await registerPronunciationSettings(plugin);
+  stopAutomaticPronunciation?.();
+  stopAutomaticPronunciation = registerAutomaticPronunciation(plugin);
   await plugin.app.registerCommand({
     id: 'generate-pronunciation-focused-rem',
     name: 'Generate Pronunciation for Focused Rem',
@@ -22,6 +27,8 @@ async function onActivate(plugin: ReactRNPlugin): Promise<void> {
 }
 
 async function onDeactivate(plugin: ReactRNPlugin): Promise<void> {
+  stopAutomaticPronunciation?.();
+  stopAutomaticPronunciation = undefined;
   await plugin.app.unregisterWidget('pronunciation_widget', WidgetLocation.RightSidebar);
 }
 

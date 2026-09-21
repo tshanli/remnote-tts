@@ -13,11 +13,18 @@ Create a vocabulary Rem and one pronunciation child:
     - Uitspraak
 ```
 
-Focus `Uitspraak` and run **Generate Pronunciation for Focused Rem**. The plugin
-reads the parent text (`passen`) and the focused label, then asks the server to
-generate speech. The server selects the language and voice from its label
-profiles, caches the MP3, and returns a stable audio URL. The plugin writes the
-audio into the focused label's back text.
+Add the plugin's **TTS** PowerUp to the pronunciation child. That explicit
+PowerUp attachment triggers generation. The plugin reads the direct parent text
+(`passen`) and the child label, then asks the server to generate speech. The
+server selects the language and voice from its label profiles, caches the MP3,
+and returns a stable audio URL. The plugin writes the audio into the
+pronunciation label's back text.
+
+The TTS PowerUp opts the child into automatic updates. Editing the parent text
+regenerates its audio. The listener waits briefly while RemNote finishes a burst
+of edits, so pasting several Rems does not send duplicate requests for the same
+pronunciation. The manual **Generate Pronunciation for Focused Rem** command
+remains available for retrying or forcing a fresh generation.
 
 The same flow works with these labels:
 
