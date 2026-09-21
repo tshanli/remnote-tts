@@ -105,6 +105,14 @@ The plugin is served at `http://localhost:8080`. In RemNote, open
 http://localhost:8080
 ```
 
+To build the uploadable plugin ZIP:
+
+```bash
+mise run plugin:package
+```
+
+This creates `plugin/PluginZip.zip` from the contents of `plugin/dist/`.
+
 Set the plugin's **Host** setting to the pronunciation server base URL. The
 default is `http://localhost:8765`. The optional bearer token and speech rate
 are also plugin settings. Language and voice are configured on the server, not

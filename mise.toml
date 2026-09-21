@@ -1,0 +1,9 @@
+[tasks."plugin:package"]
+description = "Build and package the RemNote plugin"
+dir = "plugin"
+run = [
+  "npm run build",
+  "rm -f PluginZip.zip",
+  "cd dist && zip -qr ../PluginZip.zip .",
+]
+outputs = ["plugin/PluginZip.zip"]

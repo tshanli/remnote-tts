@@ -3,10 +3,10 @@
   "id": "remnote_pronunciation",
   "name": "RemNote Pronunciation",
   "author": "RemNote Pronunciation",
-  "repoUrl": "https://github.com/jiang2ji/remnote-pronunciation",
+  "repoUrl": "https://github.com/tshanli/remnote-pronunciation",
   "version": {
     "major": 0,
-    "minor": 1,
+    "minor": 2,
     "patch": 0
   },
   "theme": [],
