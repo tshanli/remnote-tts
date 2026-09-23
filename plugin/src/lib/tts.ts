@@ -2,6 +2,7 @@ import {
   AppEvents,
   BuiltInPowerupCodes,
   type PluginRem,
+  RemType,
   type RNPlugin,
   SetRemType,
 } from "@remnote/plugin-sdk";
@@ -60,7 +61,8 @@ type TtsSourceIssue =
   | "missing-powerup"
   | "missing-label"
   | "missing-parent"
-  | "empty-parent";
+  | "empty-parent"
+  | "empty-parent-back-text";
 
 interface TtsSourceResult {
   source?: TtsSource;
@@ -80,6 +82,7 @@ const TTS_SOURCE_MESSAGES: Record<TtsSourceIssue, string> = {
   "missing-label": "The selected Rem has no text.",
   "missing-parent": "The selected Rem has no direct parent Rem.",
   "empty-parent": "The direct parent Rem has no text.",
+  "empty-parent-back-text": "The direct parent descriptor has no back text.",
 };
 
 function getErrorMessage(error: unknown): string {
@@ -195,13 +198,20 @@ async function getTtsSource(
   if (!parent) {
     return { issue: "missing-parent" };
   }
-  if (!parent.text) {
-    return { issue: "empty-parent" };
+
+  const parentIsDescriptor = (await parent.getType()) === RemType.DESCRIPTOR;
+  const sourceText = parentIsDescriptor ? parent.backText : parent.text;
+  if (!sourceText) {
+    return {
+      issue: parentIsDescriptor ? "empty-parent-back-text" : "empty-parent",
+    };
   }
 
-  const text = (await plugin.richText.toString(parent.text)).trim();
+  const text = (await plugin.richText.toString(sourceText)).trim();
   if (!text) {
-    return { issue: "empty-parent" };
+    return {
+      issue: parentIsDescriptor ? "empty-parent-back-text" : "empty-parent",
+    };
   }
 
   return { source: { rem, label, text } };
