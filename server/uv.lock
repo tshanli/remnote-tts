@@ -954,7 +954,7 @@ wheels = [
 ]
 
 [[package]]
-name = "remnote-pronunciation-server"
+name = "remnote-tts-server"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

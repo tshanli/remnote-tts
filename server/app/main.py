@@ -100,6 +100,8 @@ class Settings:
     auth_token: str | None = None
     default_language: str = "nl-NL"
     default_voice: str = "nl-NL-FennaNeural"
+    rate: str = "+0%"
+    pitch: str = "+0Hz"
     label_profiles: dict[str, tuple[str, str]] = field(
         default_factory=lambda: dict(DEFAULT_LABEL_PROFILES)
     )
@@ -137,6 +139,8 @@ class Settings:
             default_voice=str(
                 _setting(config, "DEFAULT_VOICE", "default_voice", "nl-NL-FennaNeural")
             ).strip(),
+            rate=str(_setting(config, "DEFAULT_RATE", "default_rate", "+0%")).strip(),
+            pitch=str(_setting(config, "DEFAULT_PITCH", "default_pitch", "+0Hz")).strip(),
             label_profiles=_label_profiles(
                 _setting(config, "LABEL_PROFILES", "label_profiles", None)
             ),
@@ -150,34 +154,34 @@ class Settings:
         )
 
 
-class PronunciationRequest(BaseModel):
+class TtsRequest(BaseModel):
     text: str = Field(min_length=1)
     label: str | None = None
-    language: str | None = None
-    voice: str | None = None
-    rate: str = "+0%"
-    pitch: str = "+0Hz"
 
 
-class PronunciationResponse(BaseModel):
+class TtsResponse(BaseModel):
     audioUrl: str
     hash: str
     text: str
     language: str
     voice: str
+    rate: str
+    pitch: str
 
 
 def canonical_hash(
-    request: PronunciationRequest,
-    language: str | None = None,
-    voice: str | None = None,
+    request: TtsRequest,
+    language: str,
+    voice: str,
+    rate: str,
+    pitch: str,
 ) -> str:
     canonical = {
         "text": request.text.strip(),
-        "language": (language or request.language or "").strip(),
-        "voice": (voice or request.voice or "").strip(),
-        "rate": request.rate.strip(),
-        "pitch": request.pitch.strip(),
+        "language": language.strip(),
+        "voice": voice.strip(),
+        "rate": rate.strip(),
+        "pitch": pitch.strip(),
     }
     encoded = json.dumps(
         canonical,
@@ -216,7 +220,7 @@ def _check_bearer_token(
 
 
 def _validate_request(
-    request: PronunciationRequest, settings: Settings
+    request: TtsRequest, settings: Settings
 ) -> tuple[str, str, str]:
     text = request.text.strip()
     label = (request.label or "").strip().casefold()
@@ -224,12 +228,12 @@ def _validate_request(
     language = (
         configured_profile[0]
         if configured_profile
-        else (request.language or settings.default_language).strip()
+        else settings.default_language.strip()
     )
     voice = (
         configured_profile[1]
         if configured_profile
-        else (request.voice or settings.default_voice).strip()
+        else settings.default_voice.strip()
     )
 
     if not text:
@@ -246,11 +250,13 @@ def _validate_request(
     return text, language, voice
 
 
-async def _generate_audio(
+async def _generate_tts_audio(
     settings: Settings,
-    request: PronunciationRequest,
+    request: TtsRequest,
     audio_hash: str,
     voice: str,
+    rate: str,
+    pitch: str,
 ) -> None:
     settings.audio_dir.mkdir(parents=True, exist_ok=True)
     target = _audio_path(settings, audio_hash)
@@ -268,19 +274,19 @@ async def _generate_audio(
         communicator = edge_tts.Communicate(
             request.text.strip(),
             voice=voice,
-            rate=_signed_tts_value(request.rate, "%"),
-            pitch=_signed_tts_value(request.pitch, "Hz"),
+            rate=rate,
+            pitch=pitch,
         )
         await communicator.save(str(temporary_path))
 
         if not temporary_path.exists() or temporary_path.stat().st_size == 0:
-            raise RuntimeError("Speech generation returned no audio")
+            raise RuntimeError("TTS server produced no audio")
         os.replace(temporary_path, target)
         temporary_path = None
     except HTTPException:
         raise
     except Exception as exc:
-        raise HTTPException(status_code=502, detail="Speech generation failed") from exc
+        raise HTTPException(status_code=502, detail="TTS audio generation failed") from exc
     finally:
         if temporary_path is not None:
             temporary_path.unlink(missing_ok=True)
@@ -289,7 +295,7 @@ async def _generate_audio(
 def create_app(settings: Settings | None = None) -> FastAPI:
     config = settings or Settings.from_env()
     generation_lock = asyncio.Lock()
-    app = FastAPI(title="RemNote Pronunciation Server")
+    app = FastAPI(title="RemNote TTS Server")
 
     app.add_middleware(
         CORSMiddleware,
@@ -303,37 +309,45 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def health() -> dict[str, str]:
         return {"status": "ok"}
 
-    @app.post("/api/pronunciation", response_model=PronunciationResponse)
-    async def pronunciation(
-        payload: PronunciationRequest,
+    @app.post("/api/tts", response_model=TtsResponse)
+    async def tts(
+        payload: TtsRequest,
         authorization: str | None = Header(default=None),
-    ) -> PronunciationResponse:
+    ) -> TtsResponse:
         _check_bearer_token(config.auth_token, authorization)
         text, language, voice = _validate_request(payload, config)
-        audio_hash = canonical_hash(payload, language, voice)
+        rate = _signed_tts_value(config.rate, "%")
+        pitch = _signed_tts_value(config.pitch, "Hz")
+        if not rate:
+            raise HTTPException(status_code=422, detail="TTS rate must not be empty")
+        if not pitch:
+            raise HTTPException(status_code=422, detail="TTS pitch must not be empty")
+        audio_hash = canonical_hash(payload, language, voice, rate, pitch)
         target = _audio_path(config, audio_hash)
 
         if not target.is_file():
             async with generation_lock:
                 if not target.is_file():
-                    await _generate_audio(config, payload, audio_hash, voice)
+                    await _generate_tts_audio(config, payload, audio_hash, voice, rate, pitch)
 
-        return PronunciationResponse(
+        return TtsResponse(
             audioUrl=f"{config.public_base_url}/audio/{audio_hash}.mp3",
             hash=audio_hash,
             text=text,
             language=language,
             voice=voice,
+            rate=rate,
+            pitch=pitch,
         )
 
     @app.get("/audio/{audio_hash}.mp3")
     async def audio(audio_hash: str) -> FileResponse:
         if not HASH_PATTERN.fullmatch(audio_hash):
-            raise HTTPException(status_code=404, detail="Audio not found")
+            raise HTTPException(status_code=404, detail="TTS audio not found")
 
         target = _audio_path(config, audio_hash)
         if not target.is_file():
-            raise HTTPException(status_code=404, detail="Audio not found")
+            raise HTTPException(status_code=404, detail="TTS audio not found")
         return FileResponse(target, media_type="audio/mpeg")
 
     return app

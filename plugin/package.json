@@ -1,7 +1,7 @@
 {
   "private": true,
-  "name": "remnote-pronunciation-plugin",
-  "version": "0.1.0",
+  "name": "remnote-tts-plugin",
+  "version": "0.3.1",
   "license": "MIT",
   "scripts": {
     "check-types": "tsc --noEmit",

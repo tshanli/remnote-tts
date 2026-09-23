@@ -2,7 +2,7 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-button.pronunciation-button {
+button.tts-button {
   width: 100%;
   border: 1px solid var(--rn-clr-border, #d7d7d7);
   border-radius: 6px;
@@ -12,8 +12,7 @@ button.pronunciation-button {
   padding: 8px 10px;
 }
 
-button.pronunciation-button:disabled {
+button.tts-button:disabled {
   cursor: wait;
   opacity: 0.65;
 }
-

@@ -2,34 +2,34 @@ import { declareIndexPlugin, type ReactRNPlugin, WidgetLocation } from '@remnote
 
 import '../style.css';
 import {
-  generatePronunciationForFocusedRem,
-  registerAutomaticPronunciation,
-  registerPronunciationPowerup,
-  registerPronunciationSettings,
-} from '../lib/pronunciation';
+  generateTtsForFocusedRem,
+  registerAutomaticTts,
+  registerTtsPowerup,
+  registerTtsSettings,
+} from '../lib/tts';
 
-let stopAutomaticPronunciation: (() => void) | undefined;
+let stopAutomaticTts: (() => void) | undefined;
 
 async function onActivate(plugin: ReactRNPlugin): Promise<void> {
-  await registerPronunciationPowerup(plugin);
-  await registerPronunciationSettings(plugin);
-  stopAutomaticPronunciation?.();
-  stopAutomaticPronunciation = registerAutomaticPronunciation(plugin);
+  await registerTtsPowerup(plugin);
+  await registerTtsSettings(plugin);
+  stopAutomaticTts?.();
+  stopAutomaticTts = registerAutomaticTts(plugin);
   await plugin.app.registerCommand({
-    id: 'generate-pronunciation-focused-rem',
-    name: 'Generate Pronunciation for Focused Rem',
-    action: () => generatePronunciationForFocusedRem(plugin),
+    id: 'generate-tts-focused-rem',
+    name: 'Generate TTS Audio for Focused Rem',
+    action: () => generateTtsForFocusedRem(plugin),
   });
-  await plugin.app.registerWidget('pronunciation_widget', WidgetLocation.RightSidebar, {
+  await plugin.app.registerWidget('tts_widget', WidgetLocation.RightSidebar, {
     dimensions: { height: 'auto', width: '100%' },
-    widgetTabTitle: 'Pronunciation',
+    widgetTabTitle: 'TTS',
   });
 }
 
 async function onDeactivate(plugin: ReactRNPlugin): Promise<void> {
-  stopAutomaticPronunciation?.();
-  stopAutomaticPronunciation = undefined;
-  await plugin.app.unregisterWidget('pronunciation_widget', WidgetLocation.RightSidebar);
+  stopAutomaticTts?.();
+  stopAutomaticTts = undefined;
+  await plugin.app.unregisterWidget('tts_widget', WidgetLocation.RightSidebar);
 }
 
 declareIndexPlugin(onActivate, onDeactivate);

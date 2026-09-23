@@ -1,17 +1,17 @@
 {
   "manifestVersion": 1,
-  "id": "remnote_pronunciation",
-  "name": "RemNote Pronunciation",
-  "author": "RemNote Pronunciation",
-  "repoUrl": "https://github.com/tshanli/remnote-pronunciation",
+  "id": "remnote_tts",
+  "name": "TTS Audio",
+  "author": "tshanli",
+  "repoUrl": "https://github.com/tshanli/remnote-tts",
   "version": {
     "major": 0,
-    "minor": 2,
-    "patch": 0
+    "minor": 3,
+    "patch": 1
   },
   "theme": [],
   "enableOnMobile": true,
-  "description": "Generate cached edge-tts pronunciation audio for the focused Rem.",
+  "description": "Generate cached edge-tts audio for a Rem through a configured TTS server.",
   "requestNative": false,
   "requiredScopes": [
     {

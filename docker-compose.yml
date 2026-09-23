@@ -1,5 +1,5 @@
 services:
-  pronunciation-server:
+  tts-server:
     build:
       context: .
       dockerfile: server/Dockerfile
