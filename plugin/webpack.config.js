@@ -70,7 +70,7 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: 'public', to: '' },
-        { from: 'README.md', to: 'README.md' },
+        { from: '../README.md', to: 'README.md' },
       ],
     }),
   ].filter(Boolean),
@@ -93,3 +93,4 @@ module.exports = {
         },
       },
 };
+

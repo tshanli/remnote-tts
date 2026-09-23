@@ -161,7 +161,7 @@ with a TTS PowerUp and a public HTTPS audio endpoint.
 ## Privacy
 
 The direct parent text is sent to the Host configured in the plugin. The Host
-then sends the text through Microsoft's online speech service using `edge-tts`.
+then sends the text through Microsoft's online speech service using [`edge-tts`](https://github.com/rany2/edge-tts).
 If the Host belongs to someone else, that server can receive and process the
 text.
 
