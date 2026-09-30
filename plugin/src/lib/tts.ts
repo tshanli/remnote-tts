@@ -350,7 +350,9 @@ async function writeTts(
   audioHash: string,
   generationKey: string,
 ): Promise<void> {
-  const audio = await plugin.richText.audio(audioUrl).value();
+  const audio = await plugin.richText.trimEnd(
+    await plugin.richText.audio(audioUrl).value(),
+  );
   await ttsRem.setBackText(audio);
   await ttsRem.setType(SetRemType.DESCRIPTOR);
   await ttsRem.addPowerup(BuiltInPowerupCodes.ExtraCardDetail);

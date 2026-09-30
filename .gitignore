@@ -11,3 +11,4 @@ server/.env
 .serena/
 *.py[cod]
 config.toml
+.DS_Store
