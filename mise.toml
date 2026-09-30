@@ -7,3 +7,7 @@ run = [
   "cd dist && zip -qr ../PluginZip.zip .",
 ]
 outputs = ["plugin/PluginZip.zip"]
+
+[tasks."plugin:autostart"]
+description = "Start the plugin now and after macOS login"
+run = "bash scripts/install-plugin-launchagent.sh"

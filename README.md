@@ -110,6 +110,34 @@ mise run plugin:package
 
 This creates `plugin/PluginZip.zip` from `plugin/dist/`.
 
+### Start automatically after macOS login
+
+After installing the plugin dependencies, run from the repository root:
+
+```bash
+mise run plugin:autostart
+```
+
+This installs a user LaunchAgent that runs `npm run dev` now and after login.
+It uses the current Node/npm paths and restarts the process if it exits.
+The plugin remains available at `http://localhost:8080`.
+Run the task again if you move the repository or change your Node installation.
+
+View logs:
+
+```bash
+tail -f ~/Library/Logs/remnote-tts/plugin.log ~/Library/Logs/remnote-tts/plugin-error.log
+```
+
+To remove automatic startup and stop the server:
+
+```bash
+launchctl bootout "gui/$(id -u)" ~/Library/LaunchAgents/local.remnote-tts.plugin.plist
+rm ~/Library/LaunchAgents/local.remnote-tts.plugin.plist
+```
+
+The TTS backend is started separately using the server commands above.
+
 ## API
 
 ```http
